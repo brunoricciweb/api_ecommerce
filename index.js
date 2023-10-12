@@ -1,59 +1,149 @@
-const { log } = require('console');
 const express = require('express')
 const app = express()
 const path = require('path')
 const port = 3000
 app.use(express.json());
-//var cookieParser = require('cookie-parser')
-/////////////////////////////////////////////
+var cookieParser = require('cookie-parser')
+app.use(cookieParser());
+///////////////////////////////////////////////////////////////
 
-let productos = []
+fakeDB = {
+    bruno_web: {
+        productos: [{id: 123 ,nombre: 'producto bruno', precio: 12331.85, stock:58}],
+        password: '12345',
+        carrito: [
+           
+        ]
+    },
+    ariel123:{
+        productos: [
+        	{
+        		id: 124 ,nombre: 'producto de ariel', precio: 12331.85, stock:58
+          }
+        ],
+        password: '_hola123',
+        carrito: []
+    },
+    fatima123:{
+        productos: [
+        	{
+        		id: 228 ,nombre: 'producto fatima123', precio: 12331.85, stock:58
+          }
+        ],
+        password: 'clave122',
+        carrito: []
+    },
+    magali123:{
+        productos: [
+        	{
+        		id: 320 ,nombre: 'producto de magali123',precio: 12331.85, stock:58
+          }
+        ],
+        password: 'miclave88',
+        carrito: []
+    }
+}
+
+app.get('/', (req, res) => { // devolver todos los productos
+    console.log('entró a GET /')
+    res.send('funciona ok!');
+})
+
+app.get('/set_cookie',function(req, res){
+    var cookie_name = 'username'
+    res.cookie(cookie_name , 'magali123').send('Cookie is set');
+});
+
+app.get('/read_cookie',function(req, res){
+    console.log("Cookies :  ", req.cookies);
+    res.send(req.cookies);
+});
+
+app.post('/login',function(req, res){
+    console.log('usuario recibido:', req.body.username);
+
+    if( fakeDB[req.body.username].password  ==  req.body.password  ){
+        // autenticación correcta.
+        console.log('El usuario se autenticó correctamente', req.body.username);
+        
+        res.cookie('username' , req.body.username );
+        res.send(  'Bienvenido, {}'+req.body.username  );
+    } else {
+        // error de autenticación
+        console.log('Error de autenticación!');
+        res.send('El usuario o la contraseña son incorrectos.');
+    }
+});
+
+app.post('/user',function(req, res){
+    // Crear un usuario nuevo (validar que no exista) e inicializar 
+    // la lista de productos vacía. 
+    // Guardarlo en la fakeDB.
 
 
-app.get('/productos', (req, res) => { // devolver todos los productos
+})
+
+app.post('/carrito',function(req, res){
+    // Agregar un producto (ej: {id: 0} ) al carrito.
+    // []
+    // [{},{},{}]
+
+    //carrito : []
+    
+    let miCarrito = fakeDB[req.cookies.username].carrito;
+    miCarrito.push(req.body.id)
+
+    // [0]
+    console.log(miCarrito);
+
+    res.send('Se agregó el producto al carrito.');
+})
+
+
+function middlewareAutenticacion(req, res, next){
+    console.log('Este es el middleware!');
+    console.log('Usuario en la cookie:', req.cookies.username);
+    if(req.cookies.username == undefined){
+        res.send('No estás autenticado.')
+    } else {
+        next();
+    }
+}
+
+// endpoint que necesita autenticación
+app.get('/seguro', middlewareAutenticacion ,(req, res, next) => { // devolver todos los productos
+    console.log('entró a GET /seguro')
+    res.send(`Endpoint seguro. Usuario: ${req.cookies.username}`);
+})
+
+app.get('/productos',middlewareAutenticacion ,(req, res, next) => { // devolver todos los productos
     console.log('entró a GET /productos')
-    // mandarle la variable con todos los productos.
-    res.send( productos );
-})
 
-app.get('/producto', (req, res) => {  // devolver SOLO el producto especificado (por query).
-    console.log('entró a GET /producto')
-    console.log('query: ', req.query);
-    res.send( productos[ req.query.indice ] ); 
-})
-
-app.get('/producto/:indice', (req, res) => {  // devolver SOLO el producto especificado (por parámetro).
-    console.log('entró a GET /producto/:indice')
-    console.log('params: ', req.params); 
-    res.send( productos[ req.params.indice ] ); 
-})
-
-// ELIMINAR PRODUCTOS MEDIANTE "GET", por parámetro
-app.get('/producto/eliminar/:indice', (req, res) => {  
-    console.log('entró a GET /producto/eliminar/:indice')
-    console.log('params: ', req.params); 
-    productos.splice( req.params.indice  , 1);
-    res.send( 'se eliminó el producto (por parámetro)' ); 
+    let nombreUsuario = req.cookies.username;
+    res.send( fakeDB[ nombreUsuario ].productos );
 })
 
 
-
-app.post('/producto',(req,res)=>{   // POST /producto  -> crear producto nuevo
+app.post('/producto',middlewareAutenticacion ,(req,res, next)=>{   // POST /producto  -> crear producto nuevo
     console.log('entró a POST /producto', req.body );
-    productos.push( req.body );
-    res.send();
+
+    let nombreUsuario = req.cookies.username;
+    fakeDB.nombreUsuario.productos.push(req.body);
+    //productos.push( req.body );
+    res.send(`Producto creado en el usuario ${nombreUsuario}`);
 })
 
-app.delete('/producto',(req,res)=>{   // DELETE /producto  -> eliminar producto
+app.delete('/producto/:indice',middlewareAutenticacion ,(req,res, next)=>{   // POST /producto  -> crear producto nuevo
     console.log('entró a DELETE /producto', req.body );
-    // eliminar un elemento del array
-    productos.splice( req.body.indice  , 1);
-    res.send('se eliminó el elemento');
+
+    let nombreUsuario = req.cookies.username;
+    
+    fakeDB.nombreUsuario.productos.splice(req.params.indice, 1);
+    
+    res.send(`Producto creado en el usuario ${nombreUsuario}`);
 })
 
-
-
-/////////////////////////////////////////////
+////////////////////////////////////////////`
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
 })
