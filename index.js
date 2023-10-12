@@ -5,6 +5,7 @@ const port = 3000
 app.use(express.json());
 var cookieParser = require('cookie-parser')
 app.use(cookieParser());
+
 ///////////////////////////////////////////////////////////////
 
 fakeDB = {
@@ -12,7 +13,7 @@ fakeDB = {
         productos: [{id: 123 ,nombre: 'producto bruno', precio: 12331.85, stock:58}],
         password: '12345',
         carrito: [
-           
+           3,5,8,21,22,5,5,21
         ]
     },
     ariel123:{
@@ -46,7 +47,7 @@ fakeDB = {
 
 app.get('/', (req, res) => { // devolver todos los productos
     console.log('entró a GET /')
-    res.send('funciona ok!');
+    res.sendFile(path.join(__dirname, '/index.html'));
 })
 
 app.get('/set_cookie',function(req, res){
@@ -97,6 +98,47 @@ app.post('/carrito',function(req, res){
     console.log(miCarrito);
 
     res.send('Se agregó el producto al carrito.');
+})
+
+app.get('/carrito',function(req, res){
+    // Agregar un producto (ej: {id: 0} ) al carrito.
+    function repetidos (carritoProd) {
+        let carritoProducto= []
+        carritoProd.forEach(function (id) {
+            if (carritoProducto.includes(id)==false) {
+                carritoProducto.push(id)
+            }  
+        } 
+        );
+        return carritoProducto
+    }
+    
+    function contar (carritoProd, busquedaID) {
+        let contarID = 0
+        carritoProd.forEach (function (x) { 
+            if (x == busquedaID) {
+               contarID += 1
+            }
+            }  
+        );
+        return contarID
+    }
+    
+    function agrupar (carrito){
+        let resultado = {}
+        let repetido =repetidos (carrito)
+        repetido.forEach ((y)=>{
+        let cantidad =contar(carrito, y)
+        resultado [y.toString()] = cantidad
+        }
+        ); 
+    return resultado
+    }
+    
+    let nombreUsuario = req.cookies.username;
+    let prodcarrito = (agrupar (fakeDB[nombreUsuario].carrito));
+    let jpcarrito = JSON.stringify(prodcarrito);
+    res.send(jpcarrito);  
 })
 
 

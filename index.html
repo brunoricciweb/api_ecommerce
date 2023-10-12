@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+
+     
+</body>
+<script>
+
+
+    fetch("/carrito", {
+        method: 'GET', headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        }
+    }).then((r) => { return r.json(); }).then((contenido) => { 
+        
+        console.log(contenido); 
+        
+        for ([id, cant] of Object.entries(contenido)) {
+            console.log(id, cant)
+            let miDiv = document.createElement(`div`)
+            miDiv.setAttribute('style', 'border: 1px solid black')
+            miDiv.innerHTML = `<h2>${id}</h2><h4>cantidad</h4><p>${cant}</p>`
+            document.body.appendChild(miDiv
+            )
+        };
+    })
+
+
+</script>
+
+</html>
