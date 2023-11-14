@@ -6,6 +6,9 @@ app.use(express.json());
 var cookieParser = require('cookie-parser')
 app.use(cookieParser());
 
+const swaggerUi = require('swagger-ui-express')
+const swaggerFile = require('./swagger-output.json')
+app.use('/doc', swaggerUi.serve, swaggerUi.setup(swaggerFile))
 ///////////////////////////////////////////////////////////////
 
 fakeDB = {
@@ -136,7 +139,7 @@ app.get('/carrito',function(req, res){
     }
     
     let nombreUsuario = req.cookies.username;
-    let prodcarrito = (agrupar (fakeDB[nombreUsuario].carrito));
+    let prodcarrito = (agrupar(fakeDB[nombreUsuario].carrito));
     let jpcarrito = JSON.stringify(prodcarrito);
     res.send(jpcarrito);  
 })
